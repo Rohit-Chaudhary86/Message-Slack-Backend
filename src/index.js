@@ -1,6 +1,7 @@
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import connectDB from './config/dbConfig.js';
 import { PORT } from './config/serverConfig.js';
 
 
@@ -15,4 +16,5 @@ app.get('/ping', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on ${PORT}`);
+    connectDB()
 });
