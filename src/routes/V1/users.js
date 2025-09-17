@@ -1,7 +1,9 @@
 import express from 'express'
 
+import { signUp } from '../../controllers/userController.js';
+import { userSignupSchema } from '../../validators/userSchema.js';
+import { validate } from '../../validators/zodValidator.js';
+
 const router=express.Router()
-router.get('/',(req,res)=>{
-     return res.status(200).json({Message:"Rohit Chaudhary"})
-})
+router.post('/signup',validate(userSignupSchema),signUp)
 export default router;
