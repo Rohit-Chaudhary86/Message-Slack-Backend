@@ -1,10 +1,17 @@
+import bcrypt from 'bcrypt'
+import { StatusCodes } from "http-status-codes";
+
+// import { JWT_SECRET } from "../config/serverConfig.js";
+import userRepository from "../repositories/userRepositories.js";
 import userRepositories from "../repositories/userRepositories.js"
+import { createJWT } from "../utils/common/authUtils.js";
+import ClientError from "../utils/errors/clienterror.js";
 import ValidationError from "../utils/errors/validationError.js";
 
 export const signUpService=async(data)=>{
     try {
        const newUser=await userRepositories.create(data)
-    return newUser;
+       return newUser;
     } catch (error) {
         console.log("user service error",error)
 
@@ -27,3 +34,36 @@ export const signUpService=async(data)=>{
     throw error;
   }
 };
+
+export const signInService=async(data)=>{
+  try {
+    const user=await userRepository.getByEmail(data.email)
+    if(!user){
+      throw new ClientError({
+        explanation:"invalid data sent from client",
+        message:"no registered user found with this email",
+        statusCode: StatusCodes.NOT_FOUND
+      })
+    }
+    // match the incoming pass with hash pass
+    const isMatch= bcrypt.compareSync(data.password,user.password)
+    if(!isMatch){
+      throw new ClientError({
+        explanation:"Invalid data sent from client side",
+        message:"Invalid Pass , Please try again with correct password",
+        statusCode:StatusCodes.BAD_REQUEST
+      })
+    }
+  //if email and pass match then we will genrate a token and send it back
+   return{
+    username:user.username,
+    avatat:user.avatar,
+    email:user.email,
+    token:createJWT({id: user._id, email: user.email})
+   }
+
+  } catch (error) {
+    console.log("user service error",error)
+    throw error;
+  }
+}

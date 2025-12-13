@@ -18,7 +18,7 @@ app.get('/ping', (req, res) => {
 });
 
 // ✅ Global Error Handling Middleware (must be last)
-app.use((err, req, res, ) => {
+app.use((err, req, res ) => {
   console.error("Global error handler:", err);
 
   res.status(err.statusCode || 500).json({
