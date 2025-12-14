@@ -21,7 +21,7 @@ const workSpaceSchema=mongoose.Schema({
   }],
   joinCode:{
     type:String,
-    require:[true,'Join code is required']
+    required:[true,'Join code is required']
   },
   channels:[
     {
