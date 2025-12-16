@@ -7,29 +7,41 @@ import apiRoutes from './routes/apiRoutes.js';
 
 const app = express();
 
+/* -------------------- MIDDLEWARES -------------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+/* -------------------- ROUTES -------------------- */
 app.use('/api', apiRoutes);
 
 app.get('/ping', (req, res) => {
   return res.status(StatusCodes.OK).json({ output: 'Pong' });
 });
 
-// ✅ Global Error Handling Middleware (must be last)
-app.use((err, req, res ) => {
-  console.error("Global error handler:", err);
+/* -------------------- GLOBAL ERROR HANDLER -------------------- */
+/* MUST have 4 params for Express to recognize it */
+app.use((err, req, res) => {
+  console.error('Global error handler:', err);
 
-  res.status(err.statusCode || 500).json({
+  return res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
     data: {},
-    message: err.message || "Internal Server Error",
+    message: err.message || 'Internal Server Error',
     err: err.explanation || {}
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
-  connectDB();
-});
+/* -------------------- SERVER START -------------------- */
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

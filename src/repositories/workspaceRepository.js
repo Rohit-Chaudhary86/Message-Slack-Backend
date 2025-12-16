@@ -1,24 +1,28 @@
 import { StatusCodes } from "http-status-codes";
 
+import User from "../schema/user.js";
 import Workspace from "../schema/workSpace.js";
 import ClientError from "../utils/errors/clienterror.js";
-import crudRepository from "./crudRepository.js";
-import User from "../schema/user.js";
-import Channel from "../schema/channel.js";
+//import Channel from "../schema/channel.js";
 import channelRepository from "./channelRepository.js";
+import crudRepository from "./crudRepository.js";
 
 const workspaceRepository = {
   ...crudRepository(Workspace),
-  getWorkspaceByName:async function(workspaceName){
-     const workspace=await Workspace.findOne({name:workspaceName});
-     if(!workspace){
-       throw new ClientError({
-        explanation:'invalid data sent from client',
-        message:'workspace not found',
-        status:StatusCodes.NOT_FOUND
-       })
-     }
-     return workspace
+  create: async function (data) {
+    try {
+      return await Workspace.create(data);
+    } catch (error) {
+      //  to identify duplicate names 
+      if (error.code === 11000) {
+        throw new ClientError({
+          explanation: "invalid data sent from the client",
+          message: "Workspace with this name already exists",
+          status: StatusCodes.CONFLICT
+        });
+      }
+      throw error;
+    }
   },
 
   getWorkspaceByJoinCode:async function(joinCode){

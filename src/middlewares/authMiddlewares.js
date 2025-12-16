@@ -1,13 +1,14 @@
 import { StatusCodes } from "http-status-codes";
 import jwt from 'jsonwebtoken'
 
-import { JWT_SECRET } from "../config/serverConfig";
-import userRepository from "../repositories/userRepositories";
-import { customErrorResponse, internalServerErrorResponse } from "../utils/common/responseObject";
+import { JWT_SECRET } from "../config/serverConfig.js";
+import userRepository from "../repositories/userRepositories.js";
+import { customErrorResponse, internalServerErrorResponse } from "../utils/common/responseObject.js";
 
 export const isAuthenticated=async(req,res,next)=>{
  try {
-     const token=req.header['x-access-token'];
+     const token = req.get('x-access-token');
+
   if(!token){
       return res.status(StatusCodes.FORBIDDEN).json(
         customErrorResponse({

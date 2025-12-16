@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const workSpaceSchema=mongoose.Schema({
   name:{
     type:String,
-    required:[true,'work']
+    required:[true,'work'],
+     unique: true
   },
   description:{
     type:String
@@ -30,5 +31,6 @@ const workSpaceSchema=mongoose.Schema({
     }
   ]
 })
+
 const Workspace=mongoose.model('Workspace',workSpaceSchema)
 export default Workspace;
