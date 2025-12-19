@@ -22,6 +22,7 @@ export default function crudRepository(model) {
         new: true
       });
       return updatedDoc;
-    }
+    },
+   
   };
 }

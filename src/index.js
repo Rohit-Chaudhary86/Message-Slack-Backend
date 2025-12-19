@@ -20,7 +20,7 @@ app.get('/ping', (req, res) => {
 
 /* -------------------- GLOBAL ERROR HANDLER -------------------- */
 /* MUST have 4 params for Express to recognize it */
-app.use((err, req, res) => {
+app.use((err,req, res,next) => {
   console.error('Global error handler:', err);
 
   return res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({

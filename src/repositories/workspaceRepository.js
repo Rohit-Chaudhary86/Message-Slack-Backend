@@ -9,20 +9,9 @@ import crudRepository from "./crudRepository.js";
 
 const workspaceRepository = {
   ...crudRepository(Workspace),
-  create: async function (data) {
-    try {
+
+  create: async function (data) {    
       return await Workspace.create(data);
-    } catch (error) {
-      //  to identify duplicate names 
-      if (error.code === 11000) {
-        throw new ClientError({
-          explanation: "invalid data sent from the client",
-          message: "Workspace with this name already exists",
-          status: StatusCodes.CONFLICT
-        });
-      }
-      throw error;
-    }
   },
 
   getWorkspaceByJoinCode:async function(joinCode){
@@ -104,7 +93,10 @@ const workspaceRepository = {
         'members.memberId':memberId,
     }).populate('members.memberId','username email avatar')
     return workspace;
+  },
+
+  deleteWorksapceById:async function(memberId){
+    return await Workspace.findByIdAndDelete(memberId)
   }
-  
 };
 export default workspaceRepository;
