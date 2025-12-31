@@ -1,15 +1,26 @@
+import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
 
-
 import workspaceRepository from "../repositories/workspaceRepository.js";
-
-import ValidationError from "../utils/errors/validationError.js";
-import { StatusCodes } from "http-status-codes";
 import ClientError from "../utils/errors/clienterror.js";
+import ValidationError from "../utils/errors/validationError.js";
+
+const isUserAdminOfWorkspace=(workspace,userId)=>{
+    return  workspace.members.find(
+    m => m.memberId.toString() === userId && m.role === "admin"
+  )
+};
+
+const isUserMemberOfWorkspace=(workspace,userId)=>{
+   return  workspace.members.find(
+    m => m.memberId.toString() === userId 
+  )
+}
+
 
 export const createWorkspaceService = async (workspaceData) => {
   try {
-    const joinCode = uuidv4().substring(0, 6).toLocaleUpperCase();
+    const joinCode = uuidv4().substring(0, 6).toUpperCase();
 
     const workspace = await workspaceRepository.create({
       name: workspaceData.name,
@@ -45,10 +56,16 @@ export const createWorkspaceService = async (workspaceData) => {
   }
 };
 
-export const getWorkspaceService=async(memberId)=>{
-   const workspace=await workspaceRepository.fetchWorkspaceByMemberId(memberId)
-   return workspace
-}
+export const getWorkspacesUserIsMemberOfService = async (userId) => {
+  try {
+    const response =
+      await workspaceRepository.fetchWorkspaceByMemberId(userId);
+    return response;
+  } catch (error) {
+    console.log('Get workspaces user is member of service error', error);
+    throw error;
+  }
+};
 
 
 export const deleteWorkspaceService = async (workspaceId, userId) => {
@@ -62,9 +79,7 @@ export const deleteWorkspaceService = async (workspaceId, userId) => {
     });
   }
 
-  const adminMember = workspace.members.find(
-    m => m.memberId.toString() === userId && m.role === "admin"
-  );
+  const adminMember = isUserAdminOfWorkspace(workspace,userId)
 
   if (!adminMember) {
     throw new ClientError({
@@ -74,5 +89,31 @@ export const deleteWorkspaceService = async (workspaceId, userId) => {
     });
   }
 
-  await workspaceRepository.deleteWorksapceById(workspaceId);
-};
+  await workspaceRepository.deleteWorkspaceById(workspaceId);
+}
+
+export const getWorkspaceService  =async(workspaceId,userId)=>{
+  try {
+    const workspace=await workspaceRepository.getById(workspaceId);
+  if(!workspace){
+    throw new ClientError({
+      explanation: 'invalid data sent from client',
+      message: 'workspace not found',
+      status: StatusCodes.NOT_FOUND
+    });
+  }
+   const isMember=isUserMemberOfWorkspace(workspace,userId)
+    if(!isMember){
+      throw new ClientError({
+      explanation: 'user is not a member of workspace',
+      message: 'user is not a member of workspace',
+      status: StatusCodes.UNAUTHORIZED
+    });
+    }
+    return workspace
+  } catch (error) {
+     console.log('Get workspace service error',error)
+     throw error;
+  }
+
+}

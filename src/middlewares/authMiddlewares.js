@@ -89,7 +89,7 @@ export const isAuthenticated = async (req, res, next) => {
   } catch (error) {
     console.log("auth middleware error", error);
 
-    // 🔥 TOKEN EXPIRED (THIS WAS MISSING)
+    //  TOKEN EXPIRED 
     if (error.name === "TokenExpiredError") {
       return res.status(StatusCodes.UNAUTHORIZED).json(
         customErrorResponse({
@@ -99,7 +99,7 @@ export const isAuthenticated = async (req, res, next) => {
       );
     }
 
-    // ❌ INVALID TOKEN
+    //  INVALID TOKEN
     if (error.name === "JsonWebTokenError") {
       return res.status(StatusCodes.FORBIDDEN).json(
         customErrorResponse({
@@ -109,7 +109,7 @@ export const isAuthenticated = async (req, res, next) => {
       );
     }
 
-    // ⚠️ REAL SERVER ERRORS
+    //  REAL SERVER ERRORS
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json(internalServerErrorResponse(error));

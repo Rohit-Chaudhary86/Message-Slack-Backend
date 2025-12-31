@@ -95,8 +95,16 @@ const workspaceRepository = {
     return workspace;
   },
 
-  deleteWorksapceById:async function(memberId){
+  deleteWorkspaceById:async function(memberId){
     return await Workspace.findByIdAndDelete(memberId)
+  },
+  fetchWorkspaceForUser:async function(workspaceId,userId){
+    const workspace=await Workspace.findOne({
+      _id:workspaceId,
+      'members.memberId':userId,
+    }).populate('members.memberId', 'username email avatar')
+      .populate('channels');
+    return workspace
   }
 };
 export default workspaceRepository;

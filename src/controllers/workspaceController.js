@@ -1,11 +1,12 @@
 import { StatusCodes } from "http-status-codes";
 
-import { createWorkspaceService, deleteWorkspaceService, getWorkspaceService } from "../service/workspaceService.js";
+import { createWorkspaceService, deleteWorkspaceService, getWorkspaceService, getWorkspacesUserIsMemberOfService } from "../service/workspaceService.js";
 import { customErrorResponse, internalServerErrorResponse, successResponse } from "../utils/common/responseObject.js";
 
 
 export const createWorkspaceController=async(req,res)=>{
     try {
+
         const response=await createWorkspaceService({
             ...req.body,
             owner:req.user
@@ -26,35 +27,62 @@ export const createWorkspaceController=async(req,res)=>{
         }
 }
 
-export const getUserWorkspacesController = async (req, res) => {
+export const getWorkspacesUserIsMemberOfController = async (req, res) => {
   try {
-    const workspaces =
-      await getWorkspaceService(req.user);
-
-    return res.status(200).json({
-      success: true,
-      data: workspaces,
-      message: "Workspaces fetched successfully"
-    });
+    const response = await getWorkspacesUserIsMemberOfService(req.user);
+    return res
+      .status(StatusCodes.OK)
+      .json(successResponse(response, 'Workspaces fetched successfully'));
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch workspaces"
-    });
+    console.log(error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json(customErrorResponse(error));
+    }
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(internalServerErrorResponse(error));
   }
 };
 
-export const deleteWorkspaceController=async (req,res,next)=>{
+export const deleteWorkspaceController = async (req, res) => {
   try {
-    const { workspaceId } = req.params;
-
-    await deleteWorkspaceService(workspaceId, req.user);
-
-    return res.status(200).json({
-      success: true,
-      message: "Workspace deleted successfully"
-    });
+    const response = await deleteWorkspaceService(
+      req.params.workspaceId,
+      req.user
+    );
+    return res
+      .status(StatusCodes.OK)
+      .json(successResponse(response, 'Workspace deleted successfully'));
   } catch (error) {
-    next(error);
+    console.log(error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json(customErrorResponse(error));
+    }
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(internalServerErrorResponse(error));
   }
-}
+};
+
+export const getWorkspaceController = async (req, res) => {
+  try {
+    const response = await getWorkspaceService(
+      req.params.workspaceId,
+      req.user
+    );
+    return res
+      .status(StatusCodes.OK)
+      .json(successResponse(response, 'Workspace fetched successfully'));
+  } catch (error) {
+    console.log('Get workspace controller error', error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json(customErrorResponse(error));
+    }
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(internalServerErrorResponse(error));
+  }
+};
