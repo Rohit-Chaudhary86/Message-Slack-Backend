@@ -1,6 +1,7 @@
 import express from 'express'
 
 import { 
+    addChannelToWorkspaceController,
   createWorkspaceController, 
   deleteWorkspaceController, 
   getWorkspaceByJoincodeController, 
@@ -18,5 +19,5 @@ router.get('/', isAuthenticated, getWorkspacesUserIsMemberOfController);
 router.delete('/:workspaceId', isAuthenticated, deleteWorkspaceController);
 router.get('/:workspaceId', isAuthenticated, getWorkspaceController); 
 router.get('/join/:joinCode',isAuthenticated,getWorkspaceByJoincodeController)
-
+router.post('/:workspaceId/channels',isAuthenticated,addChannelToWorkspaceController)
 export default router;

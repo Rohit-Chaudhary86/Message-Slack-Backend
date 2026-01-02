@@ -16,7 +16,11 @@ const isUserMemberOfWorkspace=(workspace,userId)=>{
     m => m.memberId.toString() === userId 
   )
 }
-
+const isChannelAlreadyPartOfWorkspace=(workspace,channelName)=>{
+  return workspace.channels.find(
+    (channel)=>channel.name.toLowerCase()==channelName.toLowerCase()
+  )
+}
 
 export const createWorkspaceService = async (workspaceData) => {
   try {
@@ -75,7 +79,7 @@ export const deleteWorkspaceService = async (workspaceId, userId) => {
     throw new ClientError({
       explanation: "invalid data sent from client",
       message: "Workspace not found",
-      status: StatusCodes.NOT_FOUND
+      statusCode: StatusCodes.NOT_FOUND
     });
   }
 
@@ -85,7 +89,7 @@ export const deleteWorkspaceService = async (workspaceId, userId) => {
     throw new ClientError({
       explanation: "unauthorized action",
       message: "Only admin can delete workspace",
-      status: StatusCodes.FORBIDDEN
+      statusCode: StatusCodes.FORBIDDEN
     });
   }
 
@@ -99,7 +103,7 @@ export const getWorkspaceService  =async(workspaceId,userId)=>{
     throw new ClientError({
       explanation: 'invalid data sent from client',
       message: 'workspace not found',
-      status: StatusCodes.NOT_FOUND
+      statusCode: StatusCodes.NOT_FOUND
     });
   }
    const isMember=isUserMemberOfWorkspace(workspace,userId)
@@ -107,7 +111,7 @@ export const getWorkspaceService  =async(workspaceId,userId)=>{
       throw new ClientError({
       explanation: 'user is not a member of workspace',
       message: 'user is not a member of workspace',
-      status: StatusCodes.UNAUTHORIZED
+      statusCode: StatusCodes.UNAUTHORIZED
     });
     }
     return workspace
@@ -118,20 +122,130 @@ export const getWorkspaceService  =async(workspaceId,userId)=>{
 
 }
 
-export const getWorkspaceByJoinCodeService=async(joinCode)=>{
+export const getWorkspaceByJoinCodeService=async(joinCode,userId)=>{
   try {
     const workspace=await workspaceRepository.getWorkspaceByJoinCode(joinCode)
      if (!workspace) {
     throw new ClientError({
       explanation: "invalid join code",
       message: "Workspace not found",
-      status: StatusCodes.NOT_FOUND
+      statusCode: StatusCodes.NOT_FOUND
     });
   }
-
+   const isMember=isUserMemberOfWorkspace(workspace,userId)
+   if(!isMember){
+    throw new ClientError({
+      explanation :"user is not a member of workspace",
+      message:"user is not a member of workspace",
+      statusCode:StatusCodes.UNAUTHORIZED
+    })
+   }
   return workspace;
   } catch (error) {
     console.log('Get workspace service error',error)
+    throw error
+  }
+}
+
+export const updateWorkspaceService=async(workspaceId,workspaceData,userId)=>{
+  try {
+    const workspace=await workspaceRepository.getById(workspaceId)
+    if(!workspace){
+      throw new ClientError({
+        explanation: "invalid data sent from client",
+      message: "Workspace not found",
+      statusCode: StatusCodes.NOT_FOUND
+      });
+    }
+    const isAdmin=isUserAdminOfWorkspace(workspace,userId);
+    if(!isAdmin){
+      throw new ClientError({
+        explanation:"user is not an admin of workspace",
+        message:"user is not an admin of workspace",
+        statusCode:StatusCodes.UNAUTHORIZED
+      })
+    }
+    const updatedWorkspace=await workspaceRepository.update(workspaceId,workspaceData)
+    return updatedWorkspace
+
+  } catch (error) {
+    console.log('Update workspace service error',error)
+    throw error
+  }
+}
+
+export const addMemberToWorkspaceService=async(workspaceId,memberId,role,userId)=>{
+  try {
+    const workspace=await workspaceRepository.getById(workspaceId)
+    if(!workspace){
+      throw new ClientError({
+        explanation: "invalid data sent from client",
+      message: "Workspace not found",
+      statusCode: StatusCodes.NOT_FOUND
+      });
+    }
+     const isAdmin = isUserAdminOfWorkspace(workspace, userId);
+    if (!isAdmin) {
+      throw new ClientError({
+        explanation: 'User is not an admin of the workspace',
+        message: 'User is not an admin of the workspace',
+        statusCode: StatusCodes.UNAUTHORIZED
+      });
+    }
+    const isValidUser=await workspaceRepository.getById(memberId)
+    if(!isValidUser){
+      throw new ClientError({
+        explanation:"invalid data sent from client",
+        message:"user not found",
+        statusCode:StatusCodes.NOT_FOUND
+      })
+    }
+    const isMember=isUserMemberOfWorkspace(workspace,memberId);
+    if (isMember) {
+  throw new ClientError({
+    explanation: "invalid data sent from client",
+    message: "User already part of workspace",
+    statusCode: StatusCodes.FORBIDDEN
+  });
+}
+   const response=await workspaceRepository.addMemberToWorkspace(workspaceId,memberId,role)
+   return response;
+  } catch (error) {
+    console.log("addMemberToWorkspaceService error",error);
+    throw error
+  }
+}
+export const addChannelToWorkspaceService=async(workspaceId,channelName,userId)=>{  // controller issue
+  try {
+    const workspace=await workspaceRepository.getWorkspaceDetailsById(workspaceId)
+    if(!workspace){
+      throw new ClientError({
+      explanation: "invalid workspaceId code",
+      message: "Workspace not found",
+      statusCode: StatusCodes.NOT_FOUND
+    });
+    }
+    //checking for admin bcs admin can only add member 
+    const adminMember=isUserAdminOfWorkspace(workspace,userId)
+    if (!adminMember) {
+      throw new ClientError({
+        explanation: "unauthorized action",
+        message: "Only admin can add channels",
+        statusCode: StatusCodes.FORBIDDEN
+      });
+    }
+    const isChannelAlreadyAdded=isChannelAlreadyPartOfWorkspace(workspace,channelName)
+    if(isChannelAlreadyAdded){
+      throw new ClientError({
+        explanation:"invalid data sent from client",
+        message:"channel already part of workspace",
+        statusCode:StatusCodes.FORBIDDEN
+      })
+    }
+    const response=await workspaceRepository.addChannelToWorkspace(workspaceId,channelName);
+    return response;
+  } catch (error) {
+    console.log("addChannelToWorkspaceService  error",error);
     throw error
   }
 }

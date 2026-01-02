@@ -10,8 +10,28 @@ import crudRepository from "./crudRepository.js";
 const workspaceRepository = {
   ...crudRepository(Workspace),
 
-  create: async function (data) {    
-      return await Workspace.create(data);
+   getWorkspaceDetailsById: async function (workspaceId) {
+    const workspace = await Workspace.findById(workspaceId)
+      .populate('members.memberId', 'username email avatar')
+      .populate('channels');
+     
+    return workspace;
+  },
+
+ getWorkspaceByName: async function (workspaceName) {
+    const workspace = await Workspace.findOne({
+      name: workspaceName
+    });
+
+    if (!workspace) {
+      throw new ClientError({
+        explanation: 'Invalid data sent from the client',
+        message: 'Workspace not found',
+        statusCode: StatusCodes.NOT_FOUND
+      });
+    }
+
+    return workspace;
   },
 
  getWorkspaceByJoinCode: async function (joinCode) {
@@ -27,7 +47,7 @@ const workspaceRepository = {
         throw new ClientError({
             explanation:"invalid data sent from the client",
             message:'Workspace not found',
-            status:StatusCodes.NOT_FOUND
+            statusCode:StatusCodes.NOT_FOUND
         });
     }
     
@@ -36,7 +56,7 @@ const workspaceRepository = {
         throw new ClientError({
             explanation:"invalid data sent from the client",
             message:'user not found',
-            status:StatusCodes.NOT_FOUND
+            statusCode:StatusCodes.NOT_FOUND
         });
     }
  
@@ -45,7 +65,7 @@ const workspaceRepository = {
         throw new ClientError({
             explanation:"invalid data sent from the client",
             message:'user already part of workspace ',
-            status:StatusCodes.FORBIDDEN
+            statusCode:StatusCodes.FORBIDDEN
         });
     }
 
@@ -63,7 +83,7 @@ const workspaceRepository = {
     throw new ClientError({
             explanation:"invalid data sent from the client",
             message:'workspace not found ',
-            status:StatusCodes.NOT_FOUND
+            statusCode:StatusCodes.NOT_FOUND
         });   
     }
     
@@ -72,7 +92,7 @@ const workspaceRepository = {
         throw new ClientError({
             explanation:'invalid data sent from client',
             message:'channel already a part of workspace',
-            status:StatusCodes.FORBIDDEN
+            statusCode:StatusCodes.FORBIDDEN
         })
     }
 
