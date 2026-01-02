@@ -117,3 +117,21 @@ export const getWorkspaceService  =async(workspaceId,userId)=>{
   }
 
 }
+
+export const getWorkspaceByJoinCodeService=async(joinCode)=>{
+  try {
+    const workspace=await workspaceRepository.getWorkspaceByJoinCode(joinCode)
+     if (!workspace) {
+    throw new ClientError({
+      explanation: "invalid join code",
+      message: "Workspace not found",
+      status: StatusCodes.NOT_FOUND
+    });
+  }
+
+  return workspace;
+  } catch (error) {
+    console.log('Get workspace service error',error)
+    throw error
+  }
+}

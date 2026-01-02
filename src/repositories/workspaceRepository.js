@@ -14,17 +14,12 @@ const workspaceRepository = {
       return await Workspace.create(data);
   },
 
-  getWorkspaceByJoinCode:async function(joinCode){
-     const workspace=await Workspace.findOne({joinCode})
-      if(!workspace){
-       throw new ClientError({
-        explanation:'invalid data sent from client',
-        message:'workspace not found',
-        status:StatusCodes.NOT_FOUND
-       })
-     }
-     return workspace
-  },
+ getWorkspaceByJoinCode: async function (joinCode) {
+  return await Workspace.findOne({ joinCode })
+    .populate("members.memberId", "username email avatar")
+    .populate("channels");
+},
+
 
   addMemberToWorkspace: async function (workspaceId, memberId, role = "member") {
     const workspace= await Workspace.findById(workspaceId)
@@ -105,6 +100,8 @@ const workspaceRepository = {
     }).populate('members.memberId', 'username email avatar')
       .populate('channels');
     return workspace
-  }
+  },
+  
+
 };
 export default workspaceRepository;

@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 
-import { createWorkspaceService, deleteWorkspaceService, getWorkspaceService, getWorkspacesUserIsMemberOfService } from "../service/workspaceService.js";
+import { createWorkspaceService, deleteWorkspaceService, getWorkspaceByJoinCodeService, getWorkspaceService, getWorkspacesUserIsMemberOfService } from "../service/workspaceService.js";
 import { customErrorResponse, internalServerErrorResponse, successResponse } from "../utils/common/responseObject.js";
 
 
@@ -86,3 +86,24 @@ export const getWorkspaceController = async (req, res) => {
       .json(internalServerErrorResponse(error));
   }
 };
+
+export const getWorkspaceByJoincodeController=async(req,res)=>{
+  try {
+    const response=await getWorkspaceByJoinCodeService(
+      req.params.joinCode
+    )
+    return res
+      .status(StatusCodes.OK)
+      .json(successResponse(response,'workspace fetched successfully by joincode'))
+  } catch (error) {
+    console.log('Get workspace controller error', error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json(customErrorResponse(error));
+    }
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(internalServerErrorResponse(error));
+  }
+}
+
