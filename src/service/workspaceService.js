@@ -1,13 +1,14 @@
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
 
+import userRepository from "../repositories/userRepositories.js";
 import workspaceRepository from "../repositories/workspaceRepository.js";
 import ClientError from "../utils/errors/clienterror.js";
 import ValidationError from "../utils/errors/validationError.js";
 
 const isUserAdminOfWorkspace=(workspace,userId)=>{
     return  workspace.members.find(
-    m => m.memberId.toString() === userId && m.role === "admin"
+    (member) => (member.memberId.toString() === userId || member.memberId._id.toString()==userId) && member.role === "admin"
   )
 };
 
@@ -192,7 +193,7 @@ export const addMemberToWorkspaceService=async(workspaceId,memberId,role,userId)
         statusCode: StatusCodes.UNAUTHORIZED
       });
     }
-    const isValidUser=await workspaceRepository.getById(memberId)
+    const isValidUser=await userRepository.getById(memberId)
     if(!isValidUser){
       throw new ClientError({
         explanation:"invalid data sent from client",

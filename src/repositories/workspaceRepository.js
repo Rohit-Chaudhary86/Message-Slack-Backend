@@ -96,9 +96,9 @@ const workspaceRepository = {
         })
     }
 
-    const channel=await channelRepository.create({name:channelName})
+    const channel=await channelRepository.create({name:channelName,workspaceId:workspaceId})
 
-    workspace.channels.push(channel._id); //i think it will break
+    workspace.channels.push(channel); //i think it will break
     await workspace.save();
 
     return workspace;

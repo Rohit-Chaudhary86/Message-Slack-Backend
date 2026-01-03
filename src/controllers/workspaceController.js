@@ -110,11 +110,15 @@ export const getWorkspaceByJoincodeController=async(req,res)=>{
 
 export const addChannelToWorkspaceController=async(req,res)=>{// some issue
   try {
+     //console.log("REQ.USER:", req.user);
     const response=await addChannelToWorkspaceService(
       req.params.workspaceId,
       req.body.channelName,
       req.user
     )
+  
+
+
      return res
       .status(StatusCodes.OK)
       .json(successResponse(response,'channel added to workspace succesfully'))
@@ -164,7 +168,7 @@ export const updateWorkspaceServiceController=async(req,res)=>{
       //workspaceId,memberId,role
       req.params.workspaceId,
       req.body.memberId,
-      req.body.role,
+      req.body.role || 'member',
       req.user
     )
     return res
