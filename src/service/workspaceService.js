@@ -6,13 +6,14 @@ import workspaceRepository from "../repositories/workspaceRepository.js";
 import ClientError from "../utils/errors/clienterror.js";
 import ValidationError from "../utils/errors/validationError.js";
 
+
 const isUserAdminOfWorkspace=(workspace,userId)=>{
     return  workspace.members.find(
     (member) => (member.memberId.toString() === userId || member.memberId._id.toString()==userId) && member.role === "admin"
   )
 };
 
-const isUserMemberOfWorkspace=(workspace,userId)=>{
+export const isUserMemberOfWorkspace=(workspace,userId)=>{
    return  workspace.members.find(
     m => m.memberId.toString() === userId 
   )
@@ -250,3 +251,4 @@ export const addChannelToWorkspaceService=async(workspaceId,channelName,userId)=
     throw error
   }
 }
+
