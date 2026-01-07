@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import connectDB from './config/dbConfig.js';
 import { PORT } from './config/serverConfig.js';
 import apiRoutes from './routes/apiRoutes.js';
+import "./processors/mailProcessor.js";
 
 const app = express();
 
