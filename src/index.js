@@ -1,16 +1,22 @@
+import "./processors/mailProcessor.js"; // keep your processor here
+
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { serverAdapter } from "./config/bullBoard.js";
 import connectDB from './config/dbConfig.js';
 import { PORT } from './config/serverConfig.js';
 import apiRoutes from './routes/apiRoutes.js';
-import "./processors/mailProcessor.js";
 
 const app = express();
 
 /* -------------------- MIDDLEWARES -------------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// bull-board route AFTER app exists
+app.use("/ui", serverAdapter.getRouter());
+
 
 /* -------------------- ROUTES -------------------- */
 app.use('/api', apiRoutes);
@@ -37,10 +43,11 @@ const startServer = async () => {
   try {
     await connectDB();
     app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
+      console.log(` Server running on port ${PORT}`);
+      console.log(` Bull Board: http://localhost:${PORT}/ui`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error(' Failed to start server:', error);
     process.exit(1);
   }
 };
