@@ -1,15 +1,18 @@
 import "./processors/mailProcessor.js"; // keep your processor here
 
 import express from 'express';
+import { createServer } from 'http';
 import { StatusCodes } from 'http-status-codes';
+import {Server} from 'socket.io'
 
 import { serverAdapter } from "./config/bullBoard.js";
 import connectDB from './config/dbConfig.js';
 import { PORT } from './config/serverConfig.js';
+import messageHandlers from "./controllers/messageSocketController.js";
 import apiRoutes from './routes/apiRoutes.js';
-
 const app = express();
-
+const server = createServer(app);
+const io = new Server(server);
 /* -------------------- MIDDLEWARES -------------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -39,10 +42,27 @@ app.use((err,req, res,_next) => {
 });
 
 /* -------------------- SERVER START -------------------- */
+
+io.on('connection', (socket) => {
+  // console.log('a user connected',socket.id);
+
+  // // setTimeout(()=>{
+  // //    socket.emit('message','This is a message from the server')
+  // // },3000)
+
+  // socket.on('messagefromclient',(data)=>{   //here client sends message to server
+  //   console.log("Message from client",data);
+
+  //   io.emit('new message',data.toUpperCase())  // here server broadcast/emmits/send the data client send to all the users at same time
+  // })
+  messageHandlers(io,socket)
+  
+});
+
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(` Server running on port ${PORT}`);
       console.log(` Bull Board: http://localhost:${PORT}/ui`);
     });
